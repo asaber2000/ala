@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الآلة الحاسبة الذكية</title>
+    <!-- تحميل مكتبة Tailwind CSS للتصميم -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- تحميل خط Cairo العربي العصري -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        cairo: ['Cairo', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        /* تخصيص شريط التمرير لسجل العمليات */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(156, 163, 175, 0.5);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(156, 163, 175, 0.8);
+        }
+
+        /* تأثير الضغط على الأزرار */
+        .calc-btn {
+            transition: all 0.12s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+        }
+        .calc-btn:active {
+            transform: scale(0.94);
+        }
+    </style>
+</head>
+<body class="bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen flex items-center justify-center p-4 transition-colors duration-300">
+
+    <!-- الحاوية الرئيسية للتطبيق -->
+    <div class="w-full max-w-4xl grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        <!-- قسم الآلة الحاسبة -->
+        <div class="lg:col-span-7 bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden p-5 sm:p-6 transition-colors duration-300">
+            
+            <!-- الشريط العلوي (العنوان وأزرار التحكم) -->
+            <div class="flex items-center justify-between mb-5">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-md shadow-indigo-500/30">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                    <h1 class="text-lg sm:text-xl font-bold tracking-tight">الآلة الحاسبة</h1>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <!-- زر تبديل الأرقام (عربية/إنجليزية) -->
+                    <button id="numeral-toggle" onclick="toggleNumerals()" title="تبديل شكل الأرقام" class="px-3 py-1.5 text-xs font-bold rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition">
+                        ١٢٣ / 123
+                    </button>
+                    
+                    <!-- زر الوضع الليلي/النهاري -->
+                    <button id="theme-toggle" onclick="toggleTheme()" title="تبديل المظهر" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition">
+                        <!-- أيقونة الشمس -->
+                        <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden dark:block text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                        <!-- أيقونة القمر -->
+                        <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 block dark:hidden text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- شاشة العرض -->
+            <div class="relative bg-slate-50 dark:bg-slate-950 rounded-2xl p-4 sm:p-5 mb-5 border border-slate-200/80 dark:border-slate-800/80 flex flex-col justify-between min-h-[135px]">
+                
+                <!-- شريط أدوات الشاشة (نسخ النتيجة) -->
+                <div class="flex justify-between items-center mb-1">
+                    <button onclick="copyResult()" class="flex items-center gap-1 text-xs text-slate-400 hover:text-indigo-500 dark:hover:text-indigo-400 transition" title="نسخ النتيجة">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        <span id="copy-feedback">نسخ</span>
+                    </button>
+                    <span id="numeral-badge" class="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">
+                        أرقام عربية
+                    </span>
+                </div>
+
+                <!-- العملية السابقة / التعبير الرياضي -->
+                <div id="previous-operand" dir="ltr" class="text-right text-slate-400 dark:text-slate-500 text-base sm:text-lg font-medium min-h-[28px] overflow-x-auto whitespace-nowrap"></div>
+                
+                <!-- النتيجة الحالية -->
+                <div id="current-operand" dir="ltr" class="text-right text-3xl sm:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight overflow-x-auto whitespace-nowrap mt-1">
+                    ٠
+                </div>
+            </div>
+
+            <!-- لوحة الأزرار -->
+            <div class="grid grid-cols-4 gap-2.5 sm:gap-3.5" dir="ltr">
+                <!-- الصف الأول -->
+                <button onclick="clearAll()" class="calc-btn h-14 sm:h-16 rounded-2xl bg-rose-100 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 hover:bg-rose-200 dark:hover:bg-rose-900/60 font-bold text-lg sm:text-xl">
+                    مسح
+                </button>
+                <button onclick="deleteLast()" aria-label="حذف" class="calc-btn h-14 sm:h-16 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 12l6.414 6.414a2 2 0 001.414.586H19a2 2 0 002-2V7a2 2 0 00-2-2h-8.172a2 2 0 00-1.414.586L3 12z" />
+                    </svg>
+                </button>
+                <button onclick="handlePercentage()" class="calc-btn h-14 sm:h-16 rounded-2xl bg-slate-100 dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 hover:bg-slate-200 dark:hover:bg-slate-700 font-bold text-xl sm:text-2xl">
+                    %
+                </button>
+                <button onclick="chooseOperation('÷')" class="calc-btn h-14 sm:h-16 rounded-2xl bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-200 dark:hover:bg-indigo-900/80 font-bold text-2xl sm:text-3xl">
+                    ÷
+                </button>
+
+                <!-- الصف الثاني -->
+                <button onclick="appendNumber('7')" class="num-btn calc-btn h-14 sm:h-16 rounded-2xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-200/70 dark:hover:bg-slate-800 font-bold text-xl sm:text-2xl border border-slate-200/50 dark:border-slate-700/50" data-val="7">٧</button>
+                <button onclick="appendNumber('8')" class="num-btn calc-btn h-14 sm:h-16 rounded-2xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-200/70 dark:hover:bg-slate-800 font-bold text-xl sm:text-2xl border border-slate-200/50 dark:border-slate-700/50" data-val="8">٨</button>
+                <button onclick="appendNumber('9')" class="num-btn calc-btn h-14 sm:h-16 rounded-2xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-200/70 dark:hover:bg-slate-800 font-bold text-xl sm:text-2xl border border-slate-200/50 dark:border-slate-700/50" data-val="9">٩</button>
+                <button onclick="chooseOperation('×')" class="calc-btn h-14 sm:h-16 rounded-2xl bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-200 dark:hover:bg-indigo-900/80 font-bold text-2xl sm:text-3xl">
+                    ×
+                </button>
+
+                <!-- الصف الثالث -->
+                <button onclick="appendNumber('4')" class="num-btn calc-btn h-14 sm:h-16 rounded-2xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-200/70 dark:hover:bg-slate-800 font-bold text-xl sm:text-2xl border border-slate-200/50 dark:border-slate-700/50" data-val="4">٤</button>
+                <button onclick="appendNumber('5')" class="num-btn calc-btn h-14 sm:h-16 rounded-2xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-200/70 dark:hover:bg-slate-800 font-bold text-xl sm:text-2xl border border-slate-200/50 dark:border-slate-700/50" data-val="5">٥</button>
+                <button onclick="appendNumber('6')" class="num-btn calc-btn h-14 sm:h-16 rounded-2xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-200/70 dark:hover:bg-slate-800 font-bold text-xl sm:text-2xl border border-slate-200/50 dark:border-slate-700/50" data-val="6">٦</button>
+                <button onclick="chooseOperation('-')" class="calc-btn h-14 sm:h-16 rounded-2xl bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-200 dark:hover:bg-indigo-900/80 font-bold text-2xl sm:text-3xl">
+                    −
+                </button>
+
+                <!-- الصف الرابع -->
+                <button onclick="appendNumber('1')" class="num-btn calc-btn h-14 sm:h-16 rounded-2xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-200/70 dark:hover:bg-slate-800 font-bold text-xl sm:text-2xl border border-slate-200/50 dark:border-slate-700/50" data-val="1">١</button>
+                <button onclick="appendNumber('2')" class="num-btn calc-btn h-14 sm:h-16 rounded-2xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-200/70 dark:hover:bg-slate-800 font-bold text-xl sm:text-2xl border border-slate-200/50 dark:border-slate-700/50" data-val="2">٢</button>
+                <button onclick="appendNumber('3')" class="num-btn calc-btn h-14 sm:h-16 rounded-2xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-200/70 dark:hover:bg-slate-800 font-bold text-xl sm:text-2xl border border-slate-200/50 dark:border-slate-700/50" data-val="3">٣</button>
+                <button onclick="chooseOperation('+')" class="calc-btn h-14 sm:h-16 rounded-2xl bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-200 dark:hover:bg-indigo-900/80 font-bold text-2xl sm:text-3xl">
+                    +
+                </button>
+
+                <!-- الصف الخامس -->
+                <button onclick="toggleSign()" class="calc-btn h-14 sm:h-16 rounded-2xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-200/70 dark:hover:bg-slate-800 font-bold text-lg sm:text-xl border border-slate-200/50 dark:border-slate-700/50">
+                    +/−
+                </button>
+                <button onclick="appendNumber('0')" class="num-btn calc-btn h-14 sm:h-16 rounded-2xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-200/70 dark:hover:bg-slate-800 font-bold text-xl sm:text-2xl border border-slate-200/50 dark:border-slate-700/50" data-val="0">٠</button>
+                <button onclick="appendNumber('.')" class="calc-btn h-14 sm:h-16 rounded-2xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-200/70 dark:hover:bg-slate-800 font-bold text-2xl sm:text-3xl border border-slate-200/50 dark:border-slate-700/50">
+                    .
+                </button>
+                <button onclick="compute()" class="calc-btn h-14 sm:h-16 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-2xl sm:text-3xl shadow-lg shadow-indigo-600/30">
+                    =
+                </button>
+            </div>
+        </div>
+
+        <!-- قسم سجل العمليات الحسابية -->
+        <div class="lg:col-span-5 bg-white dark:bg-slate-900 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 p-5 sm:p-6 flex flex-col h-[420px] lg:h-[580px] transition-colors duration-300">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
+                <div class="flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <h2 class="font-bold text-base sm:text-lg">سجل العمليات</h2>
+                </div>
+                <button onclick="clearHistory()" id="clear-history-btn" class="hidden text-xs font-semibold text-rose-500 hover:text-rose-600 dark:hover:text-rose-400 bg-rose-50 dark:bg-rose-950/40 px-2.5 py-1 rounded-lg transition">
+                    مسح السجل
+                </button>
+            </div>
+
+            <!-- قائمة العمليات المحفوظة -->
+            <div id="history-list" class="flex-1 overflow-y-auto py-3 space-y-2.5">
+                <!-- رسالة الحالة الفارغة -->
+                <div id="empty-history" class="h-full flex flex-col items-center justify-center text-center text-slate-400 dark:text-slate-600 p-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mb-2 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                    <p class="text-sm font-medium">لا توجد عمليات حسابية سابقة</p>
+                    <p class="text-xs mt-1">ستظهر نتائج عملياتك هنا للرجوع إليها بسهولة</p>
+                </div>
+            </div>
+
+            <!-- تلميح استخدام لوحة المفاتيح -->
+            <div class="pt-3 border-t border-slate-100 dark:border-slate-800 text-center">
+                <p class="text-xs text-slate-400 dark:text-slate-500">
+                    يمكنك استخدام لوحة المفاتيح للإدخال السريع (الأرقام، Enter، Backspace)
+                </p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- صندوق إشعارات منبثق (Toast) بديل لـ alert -->
+    <div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-4 py-2.5 rounded-xl shadow-lg text-sm font-semibold opacity-0 pointer-events-none transition-all duration-300 z-50">
+        تم النسخ إلى الحافظة!
+    </div>
+
+    <script>
+        // متغيرات حالة الآلة الحاسبة
+        let currentOperand = '0';
+        let previousOperand = '';
+        let operation = undefined;
+        let shouldResetScreen = false;
+        let useArabicNumerals = true; // الافتراضي عرض الأرقام العربية (١، ٢، ٣)
+        let history = [];
+
+        // عناصر واجهة المستخدم
+        const currentOperandEl = document.getElementById('current-operand');
+        const previousOperandEl = document.getElementById('previous-operand');
+        const historyListEl = document.getElementById('history-list');
+        const emptyHistoryEl = document.getElementById('empty-history');
+        const clearHistoryBtn = document.getElementById('clear-history-btn');
+        const numeralBadgeEl = document.getElementById('numeral-badge');
+
+        // خريطة تحويل الأرقام إلى العربية الشرقية
+        const arabicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+
+        /**
+         * تنسيق النص الرقمي للعرض مع الفواصل وتحويل الأرقام إذا كان الوضع العربي مفعلاً
+         */
+        function formatDisplayNumber(numberStr) {
+            if (numberStr === 'خطأ: قسمة على صفر' || numberStr === 'خطأ') return numberStr;
+            
+            const stringNumber = numberStr.toString();
+            const parts = stringNumber.split('.');
+            const integerPart = parts[0];
+            const decimalPart = parts[1];
+
+            let formattedInteger = '';
+            if (integerPart === '-') {
+                formattedInteger = '-';
+            } else if (integerPart !== '') {
+                const num = parseFloat(integerPart);
+                formattedInteger = isNaN(num) ? '' : num.toLocaleString('en-US');
+            }
+
+            let result = decimalPart != null ? `${formattedInteger}.${decimalPart}` : formattedInteger;
+
+            if (useArabicNumerals) {
+                result = result.replace(/\d/g, d => arabicDigits[d]);
+            }
+            return result;
+        }
+
+        /**
+         * تحديث شاشة الآلة الحاسبة
+         */
+        function updateDisplay() {
+            currentOperandEl.innerText = formatDisplayNumber(currentOperand);
+            
+            if (operation != null) {
+                previousOperandEl.innerText = `${formatDisplayNumber(previousOperand)} ${operation}`;
+            } else {
+                previousOperandEl.innerText = '';
+            }
+        }
+
+        /**
+         * إضافة رقم أو نقطة عشرية
+         */
+        function appendNumber(number) {
+            if (currentOperand === 'خطأ: قسمة على صفر' || currentOperand === 'خطأ') {
+                currentOperand = '0';
+            }
+
+            if (shouldResetScreen) {
+                currentOperand = '';
+                shouldResetScreen = false;
+            }
+
+            if (number === '.' && currentOperand.includes('.')) return;
+            if (number === '.' && currentOperand === '') {
+                currentOperand = '0.';
+                updateDisplay();
+                return;
+            }
+
+            if (currentOperand === '0' && number !== '.') {
+                currentOperand = number;
+            } else {
+                // تحديد حد أقصى لطول الرقم لمنع تشوه الشاشة
+                if (currentOperand.replace(/[^0-9]/g, '').length >= 15) return;
+                currentOperand += number;
+            }
+            updateDisplay();
+        }
+
+        /**
+         * اختيار العملية الحسابية (+, -, ×, ÷)
+         */
+        function chooseOperation(op) {
+            if (currentOperand === 'خطأ: قسمة على صفر' || currentOperand === 'خطأ') return;
+
+            if (currentOperand === '' && previousOperand !== '') {
+                operation = op;
+                updateDisplay();
+                return;
+            }
+
+            if (previousOperand !== '') {
+                compute(false);
+            }
+
+            operation = op;
+            previousOperand = currentOperand;
+            currentOperand = '';
+            updateDisplay();
+        }
+
+        /**
+         * تنفيذ العملية الحسابية
+         */
+        function compute(saveToHistory = true) {
+            let computation;
+            const prev = parseFloat(previousOperand);
+            const current = parseFloat(currentOperand);
+
+            if (isNaN(prev) || isNaN(current)) return;
+
+            switch (operation) {
+                case '+':
+                    computation = prev + current;
+                    break;
+                case '-':
+                    computation = prev - current;
+                    break;
+                case '×':
+                    computation = prev * current;
+                    break;
+                case '÷':
+                    if (current === 0) {
+                        currentOperand = 'خطأ: قسمة على صفر';
+                        previousOperand = '';
+                        operation = undefined;
+                        shouldResetScreen = true;
+                        updateDisplay();
+                        return;
+                    }
+                    computation = prev / current;
+                    break;
+                default:
+                    return;
+            }
+
+            // معالجة دقة الفواصل العشرية في JavaScript (مثل 0.1 + 0.2)
+            computation = Math.round(computation * 10000000000) / 10000000000;
+
+            if (saveToHistory) {
+                addHistoryItem(previousOperand, operation, currentOperand, computation.toString());
+            }
+
+            currentOperand = computation.toString();
+            operation = undefined;
+            previousOperand = '';
+            shouldResetScreen = true;
+            updateDisplay();
+        }
+
+        /**
+         * حساب النسبة المئوية
+         */
+        function handlePercentage() {
+            const current = parseFloat(currentOperand);
+            if (isNaN(current)) return;
+
+            if (previousOperand !== '' && operation) {
+                const prev = parseFloat(previousOperand);
+                currentOperand = ((prev * current) / 100).toString();
+            } else {
+                currentOperand = (current / 100).toString();
+            }
+            updateDisplay();
+        }
+
+        /**
+         * تغيير إشارة الرقم (موجب / سالب)
+         */
+        function toggleSign() {
+            if (currentOperand === '0' || currentOperand === '' || currentOperand.startsWith('خطأ')) return;
+            if (currentOperand.startsWith('-')) {
+                currentOperand = currentOperand.slice(1);
+            } else {
+                currentOperand = '-' + currentOperand;
+            }
+            updateDisplay();
+        }
+
+        /**
+         * مسح الشاشة بالكامل
+         */
+        function clearAll() {
+            currentOperand = '0';
+            previousOperand = '';
+            operation = undefined;
+            shouldResetScreen = false;
+            updateDisplay();
+        }
+
+        /**
+         * حذف آخر خانة مدخلة
+         */
+        function deleteLast() {
+            if (shouldResetScreen || currentOperand.startsWith('خطأ')) {
+                clearAll();
+                return;
+            }
+            if (currentOperand.length === 1 || (currentOperand.length === 2 && currentOperand.startsWith('-'))) {
+                currentOperand = '0';
+            } else {
+                currentOperand = currentOperand.slice(0, -1);
+            }
+            updateDisplay();
+        }
+
+        /**
+         * إضافة عملية جديدة إلى السجل
+         */
+        function addHistoryItem(prev, op, curr, res) {
+            history.unshift({ prev, op, curr, res });
+            if (history.length > 30) history.pop(); // الاحتفاظ بآخر 30 عملية
+            renderHistory();
+        }
+
+        /**
+         * عرض قائمة السجل
+         */
+        function renderHistory() {
+            if (history.length === 0) {
+                emptyHistoryEl.classList.remove('hidden');
+                clearHistoryBtn.classList.add('hidden');
+                // إزالة العناصر ما عدا رسالة الفراغ
+                Array.from(historyListEl.children).forEach(child => {
+                    if (child.id !== 'empty-history') child.remove();
+                });
+                return;
+            }
+
+            emptyHistoryEl.classList.add('hidden');
+            clearHistoryBtn.classList.remove('hidden');
+
+            // مسح العناصر القديمة وإعادة بنائها
+            Array.from(historyListEl.children).forEach(child => {
+                if (child.id !== 'empty-history') child.remove();
+            });
+
+            history.forEach((item) => {
+                const div = document.createElement('div');
+                div.className = 'p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 hover:bg-indigo-50/70 dark:hover:bg-slate-800 border border-slate-200/60 dark:border-slate-700/50 cursor-pointer transition group';
+                div.title = 'انقر لاستخدام هذه النتيجة';
+                div.onclick = () => {
+                    currentOperand = item.res;
+                    shouldResetScreen = true;
+                    updateDisplay();
+                    showToast('تم استرجاع النتيجة');
+                };
+
+                div.innerHTML = `
+                    <div dir="ltr" class="text-xs text-slate-400 dark:text-slate-400 text-right mb-1">
+                        ${formatDisplayNumber(item.prev)} ${item.op} ${formatDisplayNumber(item.curr)} =
+                    </div>
+                    <div dir="ltr" class="text-lg font-bold text-slate-800 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 text-right transition">
+                        ${formatDisplayNumber(item.res)}
+                    </div>
+                `;
+                historyListEl.appendChild(div);
+            });
+        }
+
+        /**
+         * مسح سجل العمليات بالكامل
+         */
+        function clearHistory() {
+            history = [];
+            renderHistory();
+            showToast('تم مسح سجل العمليات');
+        }
+
+        /**
+         * تبديل عرض الأرقام بين العربية (١٢٣) والإنجليزية (123)
+         */
+        function toggleNumerals() {
+            useArabicNumerals = !useArabicNumerals;
+            numeralBadgeEl.innerText = useArabicNumerals ? 'أرقام عربية' : 'أرقام إنجليزية';
+            
+            // تحديث نصوص أزرار الأرقام في الواجهة
+            document.querySelectorAll('.num-btn').forEach(btn => {
+                const val = btn.getAttribute('data-val');
+                btn.innerText = useArabicNumerals ? arabicDigits[val] : val;
+            });
+
+            updateDisplay();
+            renderHistory();
+        }
+
+        /**
+         * تبديل المظهر (الوضع الليلي / النهاري)
+         */
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+        }
+
+        /**
+         * نسخ النتيجة الحالية إلى الحافظة
+         */
+        function copyResult() {
+            const textToCopy = currentOperandEl.innerText;
+            const tempInput = document.createElement('input');
+            tempInput.value = textToCopy;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            try {
+                document.execCommand('copy');
+                showToast('تم نسخ النتيجة: ' + textToCopy);
+            } catch (err) {
+                showToast('تعذر النسخ');
+            }
+            document.body.removeChild(tempInput);
+        }
+
+        /**
+         * إظهار رسالة إشعار سريعة
+         */
+        let toastTimeout;
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.innerText = message;
+            toast.classList.remove('opacity-0', 'translate-y-2');
+            toast.classList.add('opacity-100', 'translate-y-0');
+
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('opacity-100', 'translate-y-0');
+                toast.classList.add('opacity-0', 'translate-y-2');
+            }, 2000);
+        }
+
+        /**
+         * دعم لوحة المفاتيح
+         */
+        document.addEventListener('keydown', (e) => {
+            if (e.key >= '0' && e.key <= '9') appendNumber(e.key);
+            if (e.key === '.') appendNumber('.');
+            if (e.key === '=' || e.key === 'Enter') {
+                e.preventDefault();
+                compute();
+            }
+            if (e.key === 'Backspace') deleteLast();
+            if (e.key === 'Escape') clearAll();
+            if (e.key === '+') chooseOperation('+');
+            if (e.key === '-') chooseOperation('-');
+            if (e.key === '*') chooseOperation('×');
+            if (e.key === '/') {
+                e.preventDefault();
+                chooseOperation('÷');
+            }
+            if (e.key === '%') handlePercentage();
+        });
+
+        // التهيئة الأولية
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+        updateDisplay();
+    </script>
+</body>
+</html>
